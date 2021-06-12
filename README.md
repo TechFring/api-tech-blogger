@@ -25,7 +25,7 @@ API TECH BLOGGER
 
 ## ⚙️ Executando ambiente de desenvolvimento
 
-<strong>Clone o projeto e acesso o diretório via terminal para prosseguir (os comandos a seguir foram testados somente no Linux)</strong>
+<strong>Clone o projeto e acesse o diretório via terminal para prosseguir (os comandos a seguir foram testados somente no Linux)</strong>
 
 <br/>
 
