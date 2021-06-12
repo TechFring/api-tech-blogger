@@ -55,7 +55,7 @@ python3 manage.py createsuperuser
 
 <br/>
 
-<span>Rodando projeto</span>
+<span>Executando projeto</span>
 
 ```
 python3 manage.py runserver
