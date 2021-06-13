@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+
 from users.models import User
 
 from .utils import get_filepath
@@ -44,21 +45,20 @@ class Publication(models.Model):
         return self.title
 
 
-class Comment(models.Model):
+class Save(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    content = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "comentário"
-        verbose_name_plural = "comentários"
-        db_table = "comments"
+        verbose_name = "salvo"
+        verbose_name_plural = "salvos"
+        db_table = "saves"
 
-    def __str__(self):
-        return str(self.content)
+    def __str__(self) -> str:
+        return str(self.id)
 
 
 @receiver((post_save, post_delete), sender=Publication)

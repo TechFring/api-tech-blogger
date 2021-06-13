@@ -4,13 +4,13 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from .models import Comment, Publication, Tag
+from .models import Publication, Tag, Save
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (
-    CommentSerializer,
     GetPublicationSerializer,
     PublicationSerializer,
     TagSerializer,
+    SaveSerializer,
 )
 
 
@@ -60,16 +60,9 @@ class PublicationViewSet(viewsets.ModelViewSet):
             return GetPublicationSerializer
         return PublicationSerializer
 
-    @action(methods=["get"], detail=True)
-    def comentarios(self, request, pk=None):
-        publication = self.get_object()
-        comments = Comment.objects.filter(publication_id=publication.id)
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data)
 
-
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+class SaveViewSet(viewsets.ModelViewSet):
+    queryset = Save.objects.all()
+    serializer_class = SaveSerializer
     permission_classes = [IsOwnerOrReadOnly]
-    http_method_names = ["post", "delete", "head", "put", "patch" "options", "trace"]
+    http_method_names = ["post", "delete", "head", "options", "trace"]
