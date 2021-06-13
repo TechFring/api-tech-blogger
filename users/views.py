@@ -1,6 +1,6 @@
-from publications.models import Publication
-from publications.permissions import IsOwnerOrReadOnly, IsOwner
-from publications.serializers import GetPublicationSerializer
+from publications.models import Publication, Saved
+from publications.permissions import IsOwnerOrReadOnly
+from publications.serializers import GetPublicationSerializer, SavedSerializer
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,13 +22,20 @@ class UserViewSet(
 ):
     serializer_class = UserSerializer
     queryset = User.objects.all()
+    permission_classes = [IsOwnerOrReadOnly]
     http_method_names = ["get", "put", "patch", "delete", "head", "options", "trace"]
 
-    def get_permissions(self):
-        keyword = self.request.query_params.get("keyword")
-        # if keyword == "owner":
-        #     return [IsOwner()]
-        return [IsOwnerOrReadOnly()]
+    @action(methods=["GET"], detail=True)
+    def salvos(self, request, pk=None):
+        user = self.get_object()
+        queryset = Saved.objects.filter(user_id=user.id)
+
+        page = self.paginate_queryset(queryset)
+        serializer = SavedSerializer(page, many=True, context={"request": request})
+
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
 
     @action(methods=["GET"], detail=True)
     def publicacoes(self, request, pk=None):

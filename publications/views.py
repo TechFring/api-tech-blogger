@@ -4,13 +4,13 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from .models import Publication, Tag, Save
+from .models import Publication, Tag, Saved
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (
     GetPublicationSerializer,
     PublicationSerializer,
     TagSerializer,
-    SaveSerializer,
+    SavedSerializer,
 )
 
 
@@ -61,8 +61,8 @@ class PublicationViewSet(viewsets.ModelViewSet):
         return PublicationSerializer
 
 
-class SaveViewSet(viewsets.ModelViewSet):
-    queryset = Save.objects.all()
-    serializer_class = SaveSerializer
+class SavedViewSet(viewsets.ModelViewSet):
+    queryset = Saved.objects.all()
+    serializer_class = SavedSerializer
     permission_classes = [IsOwnerOrReadOnly]
     http_method_names = ["post", "delete", "head", "options", "trace"]

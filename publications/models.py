@@ -45,7 +45,7 @@ class Publication(models.Model):
         return self.title
 
 
-class Save(models.Model):
+class Saved(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

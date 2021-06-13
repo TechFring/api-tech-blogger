@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from users.serializers import UserSerializer
 
-from .models import Publication, Save, Tag
+from .models import Publication, Saved, Tag
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -37,7 +37,10 @@ class GetPublicationSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SaveSerializer(serializers.ModelSerializer):
+class SavedSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    publication = GetPublicationSerializer(read_only=True)
+
     class Meta:
-        model = Save
+        model = Saved
         fields = "__all__"

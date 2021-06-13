@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Tag, Publication, Save
+from .models import Publication, Saved, Tag
+
 
 # Register your models here.
 @admin.register(Tag)
@@ -15,7 +16,7 @@ class PublicationAdmin(admin.ModelAdmin):
     fields = ("user", "title", "subtitle", "content", "tags", "cover")
 
 
-@admin.register(Save)
-class SaveAdmin(admin.ModelAdmin):
+@admin.register(Saved)
+class SavedAdmin(admin.ModelAdmin):
     list_display = ("publication", "user", "created_at", "updated_at")
     fields = ("publication", "user")
