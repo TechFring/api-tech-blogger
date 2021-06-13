@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tag, Publication, Comment, Like
+from .models import Tag, Publication, Comment
 
 # Register your models here.
 @admin.register(Tag)
@@ -19,9 +19,3 @@ class PublicationAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = ("publication", "user", "content", "created_at", "updated_at")
     fields = ("publication", "user", "content")
-
-
-@admin.register(Like)
-class LikeAdmin(admin.ModelAdmin):
-    list_display = ("publication", "user", "created_at", "updated_at")
-    fields = ("publication", "user")

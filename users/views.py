@@ -6,11 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .models import Follower, User
+from .models import User
 from .serializers import (
     CustomTokenObtainPairSerializer,
     CustomTokenRefreshSerializer,
-    FollowerSerializer,
     UserSerializer,
 )
 
@@ -30,18 +29,6 @@ class UserViewSet(
         # if keyword == "owner":
         #     return [IsOwner()]
         return [IsOwnerOrReadOnly()]
-
-    @action(methods=["GET"], detail=True)
-    def seguidores(self, request, pk=None):
-        user = self.get_object()
-        queryset = Follower.objects.filter(follower_id=user.id)
-
-        page = self.paginate_queryset(queryset)
-        serializer = FollowerSerializer(page, many=True)
-
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
 
     @action(methods=["GET"], detail=True)
     def publicacoes(self, request, pk=None):
@@ -67,13 +54,6 @@ class AuthViewSet(viewsets.ModelViewSet):
         "options",
         "trace",
     ]
-
-
-class FollowerViewSet(viewsets.ModelViewSet):
-    serializer_class = FollowerSerializer
-    queryset = Follower.objects.all()
-    permission_classes = [IsOwnerOrReadOnly]
-    http_method_names = ["post", "delete", "head", "options", "trace"]
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):

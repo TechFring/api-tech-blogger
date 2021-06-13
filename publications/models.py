@@ -61,29 +61,8 @@ class Comment(models.Model):
         return str(self.content)
 
 
-class Like(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "like"
-        verbose_name_plural = "likes"
-        db_table = "likes"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "publication"], name="user_and_publication_unique"
-            )
-        ]
-
-    def __str__(self):
-        return str(self.publication)
-
-
 @receiver((post_save, post_delete), sender=Publication)
-def get_number_publications(sender, instance, *args, **kwargs):
+def get_total_publications(sender, instance, *args, **kwargs):
     total = Publication.objects.filter(user_id=instance.user_id).count()
     user = User.objects.get(id=instance.user_id)
     user.total_publications = total

@@ -5,7 +5,7 @@ from rest_framework_simplejwt.serializers import (
 )
 from rest_framework_simplejwt.state import token_backend
 
-from .models import Follower, User
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,12 +20,6 @@ class UserSerializer(serializers.ModelSerializer):
             "photo",
             "total_publications",
         )
-
-
-class FollowerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Follower
-        fields = "__all__"
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

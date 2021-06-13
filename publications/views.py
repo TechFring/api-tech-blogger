@@ -4,12 +4,11 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from .models import Comment, Like, Publication, Tag
+from .models import Comment, Publication, Tag
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (
     CommentSerializer,
     GetPublicationSerializer,
-    LikeSerializer,
     PublicationSerializer,
     TagSerializer,
 )
@@ -74,10 +73,3 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsOwnerOrReadOnly]
     http_method_names = ["post", "delete", "head", "put", "patch" "options", "trace"]
-
-
-class LikeViewSet(viewsets.ModelViewSet):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
-    permission_classes = [IsOwnerOrReadOnly]
-    http_method_names = ["post", "delete", "head", "options", "trace"]
