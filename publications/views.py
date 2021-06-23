@@ -1,16 +1,17 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
-from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
-from .models import Publication, Tag, Saved
+from .models import Publication, Saved, Tag
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (
     GetPublicationSerializer,
     PublicationSerializer,
+    RetrieveSavedSerializer,
     TagSerializer,
-    SavedSerializer,
 )
 
 
@@ -52,6 +53,16 @@ class PublicationViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return super().list(request, *args, **kwargs)
 
+    def retrieve(self, request: Request, *args, **kwargs):
+        instance = self.get_object()
+        keyword = request.query_params.get("keyword")
+        is_owner = request.user.id == instance.user.id
+        if keyword == "owner" and not is_owner:
+            data = {"detail": "Você não tem permissão para executar essa ação."}
+            return Response(data, status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -63,6 +74,9 @@ class PublicationViewSet(viewsets.ModelViewSet):
 
 class SavedViewSet(viewsets.ModelViewSet):
     queryset = Saved.objects.all()
-    serializer_class = SavedSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    serializer_class = RetrieveSavedSerializer
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
     http_method_names = ["post", "delete", "head", "options", "trace"]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

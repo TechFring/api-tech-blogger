@@ -44,3 +44,11 @@ class SavedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Saved
         fields = "__all__"
+
+
+class RetrieveSavedSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Saved
+        fields = "__all__"

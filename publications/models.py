@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-
 from users.models import User
 
 from .utils import get_filepath
@@ -55,9 +54,15 @@ class Saved(models.Model):
     class Meta:
         verbose_name = "salvo"
         verbose_name_plural = "salvos"
-        db_table = "saves"
+        db_table = "saved"
+        ordering = ("-created_at",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["publication", "user"], name="publication_and_user_uniq"
+            )
+        ]
 
-    def __str__(self) -> str:
+    def __str__(self):
         return str(self.id)
 
 
