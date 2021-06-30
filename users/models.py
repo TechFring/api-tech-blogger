@@ -6,10 +6,9 @@ from django.db import models
 from publications.utils import get_filepath
 
 
-# Create your models here.
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     email = models.EmailField(unique=True)
     photo = models.ImageField(default=None, blank=True, upload_to=get_filepath)
     total_publications = models.IntegerField(default=0)
-    bio = models.TextField(blank=True)
+    bio = models.TextField(blank=True, max_length=255)

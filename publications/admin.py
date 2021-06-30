@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import Publication, Saved, Tag
 
 
-# Register your models here.
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ("name", "created_at", "updated_at")

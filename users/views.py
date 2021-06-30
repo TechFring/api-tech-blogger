@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from publications.models import Publication, Saved
-from publications.permissions import IsOwnerOrReadOnly
 from publications.serializers import (
     GetPublicationSerializer,
     RetrieveSavedSerializer,
@@ -8,16 +7,12 @@ from publications.serializers import (
 )
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import User
-from .serializers import (
-    CustomTokenObtainPairSerializer,
-    CustomTokenRefreshSerializer,
-    UserSerializer,
-)
+from .serializers import UserSerializer
 
 
 class UserViewSet(
@@ -28,9 +23,12 @@ class UserViewSet(
 ):
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = [IsOwnerOrReadOnly]
-    # http_method_names = ["get", "put", "patch", "head", "options", "trace"]
-    http_method_names = ["get", "head", "options", "trace"]
+    permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "put", "patch", "head", "options", "trace"]
+
+    def list(self, request: Request, *args, **kwargs):
+        serializer = UserSerializer(request.user, context={"request": request})
+        return Response(serializer.data)
 
     @action(methods=["GET"], detail=True)
     def salvos(self, request: Request, pk=None):
@@ -82,11 +80,3 @@ class AuthViewSet(viewsets.ModelViewSet):
         "options",
         "trace",
     ]
-
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-
-
-class CustomTokenRefreshView(TokenRefreshView):
-    serializer_class = CustomTokenRefreshSerializer

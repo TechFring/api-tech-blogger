@@ -1,10 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import (
-    TokenObtainPairSerializer,
-    TokenRefreshSerializer,
-)
-from rest_framework_simplejwt.state import token_backend
+from rest_framework.serializers import raise_errors_on_nested_writes
+from rest_framework.utils import model_meta
 
 from .models import User
 
@@ -12,18 +9,30 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password")
-        return User.objects.create(password=make_password(password), **validated_data)
+        user = User.objects.create(password=make_password(password), **validated_data)
+        return user
 
-    # def update(self, instance, validated_data):
-    #     print("*" * 50)
-    #     print(instance)
-    #     print(validated_data)
-    #     print("*" * 50)
-    #     password = validated_data.get("password").get(
-    #         "password", instance.user.password
-    #     )
-    #     instance.user.password = make_password(password)
-    #     instance.user.save()
+    def update(self, instance, validated_data):
+        raise_errors_on_nested_writes("update", self, validated_data)
+        info = model_meta.get_field_info(instance)
+
+        m2m_fields = []
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                m2m_fields.append((attr, value))
+            elif attr == "password":
+                password = make_password(value)
+                setattr(instance, attr, password)
+            else:
+                setattr(instance, attr, value)
+
+        instance.save()
+
+        for attr, value in m2m_fields:
+            field = getattr(instance, attr)
+            field.set(value)
+
+        return instance
 
     class Meta:
         model = User
@@ -37,21 +46,10 @@ class UserSerializer(serializers.ModelSerializer):
             "total_publications",
             "password",
             "email",
+            "date_joined",
         )
-        extra_kwargs = {"password": {"write_only": True}, "email": {"write_only": True}}
-
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        data = super(CustomTokenObtainPairSerializer, self).validate(attrs)
-        data.update({"id": self.user.id})
-        return data
-
-
-class CustomTokenRefreshSerializer(TokenRefreshSerializer):
-    def validate(self, attrs):
-        data = super(CustomTokenRefreshSerializer, self).validate(attrs)
-        decoded_payload = token_backend.decode(data["access"], verify=True)
-        user_uid = decoded_payload["user_id"]
-        data.update({"id": user_uid})
-        return data
+        extra_kwargs = {
+            "password": {"write_only": True},
+            "total_publications": {"read_only": True},
+            "date_joined": {"read_only": True},
+        }
