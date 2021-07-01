@@ -7,8 +7,8 @@ from publications.serializers import (
 )
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import User
@@ -23,8 +23,12 @@ class UserViewSet(
 ):
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated]
     http_method_names = ["get", "put", "patch", "head", "options", "trace"]
+
+    def get_permissions(self):
+        if self.action == "list":
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def list(self, request: Request, *args, **kwargs):
         serializer = UserSerializer(request.user, context={"request": request})
@@ -41,12 +45,9 @@ class UserViewSet(
                 )
                 serializer = RetrieveSavedSerializer(queryset)
                 return Response(serializer.data)
-            except ValidationError as err:
-                data = {"message": err}
-                return Response(data, status.HTTP_400_BAD_REQUEST)
             except Exception:
-                data = {"message": "Não encontrado"}
-                return Response(data, status.HTTP_400_BAD_REQUEST)
+                data = {}
+                return Response(data, status.HTTP_200_OK)
 
         queryset = Saved.objects.filter(user_id=user.id)
         page = self.paginate_queryset(queryset)
