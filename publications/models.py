@@ -11,9 +11,11 @@ from .utils import get_filepath
 
 class Tag(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    name = models.CharField(max_length=30, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=30, unique=True, verbose_name="nome")
+    created_at = models.DateTimeField(
+        auto_now_add=True, editable=False, verbose_name="criado em"
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="atualizado em")
 
     class Meta:
         db_table = "tags"
@@ -25,14 +27,18 @@ class Tag(models.Model):
 
 class Publication(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(max_length=50)
-    subtitle = models.CharField(max_length=150)
-    cover = models.ImageField(default=None, upload_to=get_filepath)
-    content = models.TextField()
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="usuário"
+    )
+    title = models.CharField(max_length=50, verbose_name="título")
+    subtitle = models.CharField(max_length=150, verbose_name="subtítulo")
+    cover = models.ImageField(default=None, upload_to=get_filepath, verbose_name="capa")
+    content = models.TextField(verbose_name="conteúdo")
     tags = models.ManyToManyField(Tag)
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True, editable=False, verbose_name="criado em"
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="atualizado em")
 
     class Meta:
         verbose_name = "publicação"
@@ -46,10 +52,16 @@ class Publication(models.Model):
 
 class Saved(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True)
+    publication = models.ForeignKey(
+        Publication, on_delete=models.CASCADE, verbose_name="publicação"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="usuário"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, editable=False, verbose_name="criado em"
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="atualizado em")
 
     class Meta:
         verbose_name = "salvo"
