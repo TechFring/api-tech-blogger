@@ -1,12 +1,10 @@
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
 from .models import Publication, Saved, Tag
-from .permissions import IsOwnerOrReadOnly
 from .serializers import (
     GetPublicationSerializer,
     PublicationSerializer,
@@ -18,16 +16,12 @@ from .serializers import (
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
-    def get_permissions(self):
-        if self.request.method == "GET":
-            return []
-        return [IsAdminUser()]
+    http_method_names = ["get", "head", "options", "trace"]
 
     @action(methods=["get"], detail=True)
     def publicacoes(self, request, pk=None):
         tag = self.get_object()
-        queryset = Publication.objects.filter(tags__id=tag.id)
+        queryset = Publication.objects.filter(tags__id=tag.id, user__is_active=True)
 
         page = self.paginate_queryset(queryset)
         serializer = GetPublicationSerializer(
@@ -40,13 +34,12 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 class PublicationViewSet(viewsets.ModelViewSet):
-    queryset = Publication.objects.all()
-    permission_classes = [IsOwnerOrReadOnly]
+    queryset = Publication.objects.filter(user__is_active=True)
 
     def list(self, request: Request, *args, **kwargs):
         keyword = request.query_params.get("keyword")
         if keyword == "random":
-            publications = Publication.objects.all().order_by("?")[:3]
+            publications = self.queryset.order_by("?")[:3]
             serializer = GetPublicationSerializer(
                 publications, many=True, context={"request": request}
             )
@@ -75,7 +68,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
 class SavedViewSet(viewsets.ModelViewSet):
     queryset = Saved.objects.all()
     serializer_class = RetrieveSavedSerializer
-    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     http_method_names = ["post", "delete", "head", "options", "trace"]
 
     def perform_create(self, serializer):

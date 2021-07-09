@@ -11,10 +11,4 @@ class IsOwnerOrReadOnly(BasePermission):
 
         if resource == "usuarios":
             return obj == request.user
-
-        return obj.user == request.user
-
-
-class IsOwner(BasePermission):
-    def has_object_permission(self, request, view, obj):
         return obj.user == request.user

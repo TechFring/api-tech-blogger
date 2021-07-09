@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 from publications.models import Publication, Saved
 from publications.serializers import (
     GetPublicationSerializer,
@@ -7,9 +6,10 @@ from publications.serializers import (
 )
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User
 from .serializers import UserSerializer
@@ -22,7 +22,7 @@ class UserViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.filter(is_active=True)
     http_method_names = ["get", "put", "patch", "head", "options", "trace"]
 
     def get_permissions(self):
@@ -49,7 +49,9 @@ class UserViewSet(
                 data = {}
                 return Response(data, status.HTTP_200_OK)
 
-        queryset = Saved.objects.filter(user_id=user.id)
+        queryset = Saved.objects.filter(
+            user_id=user.id, publication__user__is_active=True
+        )
         page = self.paginate_queryset(queryset)
         serializer = SavedSerializer(page, many=True, context={"request": request})
 
@@ -72,7 +74,7 @@ class UserViewSet(
         return Response(serializer.data)
 
 
-class AuthViewSet(viewsets.ModelViewSet):
+class AuthRegisterViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     http_method_names = [
@@ -81,3 +83,18 @@ class AuthViewSet(viewsets.ModelViewSet):
         "options",
         "trace",
     ]
+
+
+class AuthLoginViewSet(TokenObtainPairView):
+    def post(self, request: Request, *args, **kwargs):
+        username = request.data["username"]
+        password = request.data["password"]
+
+        user = User.objects.get(username=username)
+        user_is_not_active = user.check_password(password) and not user.is_active
+
+        if user_is_not_active:
+            user.is_active = True
+            user.save()
+
+        return super().post(request, *args, **kwargs)
